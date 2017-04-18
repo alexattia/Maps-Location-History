@@ -152,10 +152,20 @@ def full_df(folder):
     return df.reset_index(drop=True)
 
 def get_sec(time_str):
+    """
+    Convert time string to seconds
+    """
     h,m,s = re.sub("[^0-9]", " ",time_str).split()
     return int(h) * 3600 + int(m) * 60 + int(s)
 
 def time_at(df, address=None, name=None, category=None):
+    """
+    Process dataframe for getting time stats about an activity or place
+    :param address: place address
+    :param name: place name
+    :param category: activity (driving, walking ...)
+    :return: dataframe with rows doing or beeing, total hours at, number of days of timelapse, activity/place
+    """
     delta = datetime.strptime(df['EndDate'].max(), "%Y-%m-%d") - datetime.strptime(df['BeginDate'].min(), "%Y-%m-%d")
     delta = delta.days
     if address:
@@ -173,6 +183,12 @@ def time_at(df, address=None, name=None, category=None):
     return df2, total_hours, delta, at
 
 def time_at_place(df, address=None, name=None):
+    """
+    Get time stats at a specific place
+    :param address: place address
+    :param name: place name
+    :return: dataframe with rows beeing at this place
+    """
     df2, total_hours, delta, at = time_at(df, address=address, name=name, category=None)
     total_day_address = len(df2['BeginDate'].unique())
     try:
@@ -183,6 +199,11 @@ def time_at_place(df, address=None, name=None):
         print('You never been to this place')
     
 def time_at_doing(df, category):
+    """
+    Get time stats doing an activity
+    :param category: activity (driving, walking ...)
+    :return: dataframe with rows beeing doing this activity
+    """
     df2, total_hours, delta, at = time_at(df, category=category)
     mean_min = round(df2['DurationMin'].mean(), 1)
     mean_dist = round(df2['Distance'].mean()*0.001, 1)
