@@ -79,7 +79,7 @@ def create_df(places):
     df = pd.DataFrame(places)
     times = df['TimeSpan'].apply(pd.Series).rename(columns={0:'BeginTime', 1:'EndTime'})
     df = pd.concat([df, times], axis = 1)
-    df.drop(['address', 'TimeSpan', 'Email', 'Description'], axis=1, inplace=True)
+    df.drop(['TimeSpan', 'Email', 'Description'], axis=1, inplace=True)
     df['Track'] = df['Track'].apply(lambda x:[d.split(' ') for d in x if d != 'clampToGround'])
     df = df.apply(convert_time, axis=1)
     return df.sort_values('IndexTime', ascending=False)
@@ -106,7 +106,7 @@ def get_kml_file(month, day, cookie_content, folder):
     if len(day_file) == 1 :
         day_file = '0' + day_file
     url = 'https://www.google.fr/maps/timeline/kml?authuser=0&pb=!1m8!1m3!1i2017!2i{0}!3i{1}!2m3!1i2017!2i{0}!3i{1}'.format(month_url, day_url)
-    time.sleep(np.random.randint(0, 0.6))
+    time.sleep(np.random.randint(0, 0.3))
     r = requests.get(url, cookies=cookies)
     if r.status_code == 200:
         with open(folder + 'history-2017-{}-{}.kml'.format(month_file, day_file), 'w') as f:
