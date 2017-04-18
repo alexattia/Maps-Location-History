@@ -5,6 +5,7 @@ import glob
 from bs4 import BeautifulSoup
 from datetime import datetime
 import time
+import re
 import numpy as np
 from datetime import datetime
 from dateutil import tz
@@ -65,6 +66,7 @@ def convert_time(row):
     row['IndexTime'] = row['BeginTime'] = convert_timezone(row['BeginTime'])
     row['BeginDate'], row['BeginTime'] = row['BeginTime'].split(' ')
     row['EndDate'], row['EndTime'] = convert_timezone(row['EndTime']).split(' ')
+    row['WeekDay'] = datetime.strptime(row['BeginDate'], "%Y-%m-%d").weekday()
     return row
 
 def create_df(places):
@@ -148,4 +150,51 @@ def full_df(folder):
     df['Track'] = df['Track'].map(mapping)
     df['Distance'] = df['Distance'].apply(int)
     return df.reset_index(drop=True)
+
+def get_sec(time_str):
+    h,m,s = re.sub("[^0-9]", " ",time_str).split()
+    return int(h) * 3600 + int(m) * 60 + int(s)
+
+def time_at(df, address=None, name=None, category=None):
+    delta = datetime.strptime(df['EndDate'].max(), "%Y-%m-%d") - datetime.strptime(df['BeginDate'].min(), "%Y-%m-%d")
+    delta = delta.days
+    if address:
+        df2 = df[df['Address'] == address]
+        at = address
+    elif name:
+        df2 = df[df['Name'] == name]
+        at = name
+    elif category:
+        df2 = df[df['Category'] == category.title()]
+        at = category
+    df2['DurationMin'] = df2['Duration'].apply(get_sec) / 60
+    total_min = df2['DurationMin'].sum()
+    total_hours = total_min / 60
+    return df2, total_hours, delta, at
+
+def time_at_place(df, address=None, name=None):
+    df2, total_hours, delta, at = time_at(df, address=address, name=name, category=None)
+    total_day_address = len(df2['BeginDate'].unique())
+    try:
+        print("For {} days, I have been {} times at {} for a total of {} hours or {} hours/day".format(
+                delta, total_day_address, at, round(total_hours, 1), round(total_hours/total_day_address, 1)))
+        return df2.reset_index(drop=True)
+    except ZeroDivisionError:
+        print('You never been to this place')
+    
+def time_at_doing(df, category):
+    df2, total_hours, delta, at = time_at(df, category=category)
+    mean_min = round(df2['DurationMin'].mean(), 1)
+    mean_dist = round(df2['Distance'].mean()*0.001, 1)
+    n_times_per_day = len(df2) / len(df2['BeginDate'].unique())
+    act_dist_tot = df2['Distance'].sum()*0.001
+    act_dist_per_day = act_dist_tot / len(df2['BeginDate'].unique())
+    try:
+        print("For {} days, I have been {} {} times/day : {} km in total ({} km/days).".format(
+                delta, at, round(n_times_per_day,1), round(act_dist_tot, 1), round(act_dist_per_day, 1)))
+        print("On average, each time I am {} is for {} min and {} km.".format(
+                at, mean_min, mean_dist))
+        return df2.reset_index(drop=True)
+    except ZeroDivisionError:
+        print('You never did this activity!')
 
