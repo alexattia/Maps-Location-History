@@ -140,14 +140,12 @@ def full_df(folder):
     for file in kml_files:
         df = pd.concat([df, create_df(create_places_list(file))])
     df = df.sort_values('IndexTime', ascending=False)
-    mapping = df['Track'].to_dict()
-    df.drop(['Track', 'name'], axis=1, inplace=True)
     # Need hashable elements to drop duplicates, tuples are, list aren't
+    df = df[['Address', 'BeginDate', 'BeginTime', 'Category', 'Distance', 'Duration',
+       'EndDate', 'EndTime', 'IndexTime', 'Name', 'Track', 'WeekDay']]
     for elem in df.columns:
-        df[elem] = df[elem].apply(lambda x : tuple(x) if type(x) is list else x)
+        df[elem] = df[elem].apply(lambda x : tuple([tuple(p) for p in x]) if type(x) is list else x)
     df.drop_duplicates(inplace=True)
-    df['Track'] = df.index
-    df['Track'] = df['Track'].map(mapping)
     df['Distance'] = df['Distance'].apply(int)
     return df.reset_index(drop=True)
 

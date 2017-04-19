@@ -15,7 +15,7 @@ In order to export processed data from Google Maps website from a python script,
 4. Save this element as a cURL
 5. Open the cURL in a text editor
 
-![Explanations Image](https://github.com/alexattia/Maps-Location-History/edit/master/saved_as_curl.png)
+![Explanations Image](https://github.com/alexattia/Maps-Location-History/blob/master/saved_as_curl.png)
 
 You should get something like this:
 ```
