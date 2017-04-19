@@ -217,3 +217,7 @@ def time_at_doing(df, category):
     except ZeroDivisionError:
         print('You never did this activity!')
 
+def sec_to_time(sec):
+    h, s = divmod(sec, 3600)
+    m,s = divmod(s, 60)
+    return h, m, s, "%02d:%02d:%02d" % (h,m,s)
