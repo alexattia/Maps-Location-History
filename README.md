@@ -41,3 +41,6 @@ Pass the folder path, the cookie content and the days you want to save to the fu
 
 2. Create a dataframe
 Pass the folder path where your files are saved to `df = process_location.full_df(folder)` to get a well formated dataframe.
+
+3. Data Visualization, Stats
+Use the Jupyter notebook to see my data visualization and stats (time driving, at work, etc.)
