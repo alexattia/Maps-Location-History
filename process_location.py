@@ -8,6 +8,8 @@ import time
 import re
 import numpy as np
 from datetime import datetime
+import imp
+from mpl_toolkits.basemap import Basemap
 from dateutil import tz
 
 def convert_timezone(dtime):
@@ -221,3 +223,37 @@ def sec_to_time(sec):
     h, s = divmod(sec, 3600)
     m,s = divmod(s, 60)
     return h, m, s, "%02d:%02d:%02d" % (h,m,s)
+
+def plot_basemap(dataframe=None, borders=None, ax=None, title=None):
+    """
+    Plot on a basemap with passed limits scatter points
+    :param dataframe: dataframe containing all wanted points to plot
+    :param borders: llcrnrlon, llcrnrlat, urcrnrlon, urcrnrlat
+    :param ax: for matplotlib subplot
+    :param title: plot title
+    """
+    longitudeArray = [float(elem[0]) for elem in np.concatenate(list(dataframe.Track))]
+    latitudeArray = [float(elem[1]) for elem in np.concatenate(list(dataframe.Track))]
+    if borders:
+        (llcrnrlon_sf, llcrnrlat_sf, urcrnrlon_sf, urcrnrlat_sf) = borders
+    else:
+        llcrnrlon_sf = min(longitudeArray) 
+        llcrnrlat_sf = min(latitudeArray)
+        urcrnrlon_sf = max(longitudeArray)
+        urcrnrlat_sf = max(latitudeArray)
+    m = Basemap(llcrnrlon=llcrnrlon_sf, #Set map's displayed max/min based on your set's max/min
+        llcrnrlat=llcrnrlat_sf,
+        urcrnrlon=urcrnrlon_sf,
+        urcrnrlat=urcrnrlat_sf,
+        lat_ts=20, #"latitude of true scale" lat_ts=0 is stereographic projection
+        resolution='h', #resolution can be set to 'c','l','i','h', or 'f' - for crude, low, intermediate, high, or full
+        projection='merc',
+        lon_0=longitudeArray[0],
+        lat_0=latitudeArray[0], ax = ax)
+    x1, y1 = m(longitudeArray, latitudeArray) #map the lat, long arrays to x, y coordinate pairs
+    m.drawmapboundary(fill_color="white", ax = ax)
+    m.drawcoastlines(ax = ax)
+    m.drawcountries(ax = ax)
+    m.scatter(x1, y1, s=25, c='r', marker="o", ax=ax) #Plot your markers and pick their size, color, and shape
+    if title:
+        ax.set_title(title)
